@@ -1,0 +1,22 @@
+@import '../../../variables.less';
+
+.Slider {
+    position: absolute;
+    bottom: 45px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+
+    &__item {
+        border-radius: 8px;
+        width: 6px;
+        height: 6px;
+        margin: 2px;
+        cursor: pointer;
+        border: 1px solid @white;
+
+        &--active {
+            background: @white;
+        }
+    }
+}

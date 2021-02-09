@@ -1,0 +1,20 @@
+@import '../../../variables.less';
+
+.FlatPreview {
+    width: calc(~"50% - 8px");
+    margin: 0 8px 8px 0;
+    position: relative;
+
+    &__img {
+        height: calc(~"100% - 40px");
+        width: 100%;
+    }
+
+    &__priceLabel {
+        position: absolute;
+        top: 0;
+        color: @white;
+        padding: 8px;
+        background-color: @turquoise;
+    }
+}

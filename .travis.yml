@@ -1,0 +1,34 @@
+sudo: reqired
+services:
+  - docker
+
+# TODO: change the way of creation
+before_install:
+  - docker build -t daniladanila2378/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run daniladanila2378/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t daniladanila2378/rent-flat2-client ./client
+  - docker build -t daniladanila2378/rent-flat2-nginx ./nginx
+  - docker build -t daniladanila2378/rent-flat2-server ./server
+# Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+# Take images and push to docker hub
+  - docker push daniladanila2378/rent-flat2-client
+  - docker push daniladanila2378/rent-flat2-nginx
+  - docker push daniladanila2378/rent-flat2-server
+
+deploy:
+  provider: elasticbeanstalk
+  access_key_id: $AWS_KEY_ID
+  secret_access_key:
+    secure: "$AWS_SECRET_KEY"
+  region: "eu-central-1"
+  app: "rent-flat"
+  env: "RentFlat-env"
+  bucket_name: "elasticbeanstalk-eu-central-1-559249728360"
+  bucket_path: flat-rent
+  on:
+    branch: master

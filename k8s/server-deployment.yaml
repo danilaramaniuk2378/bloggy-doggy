@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      component: server
+  template:
+    metadata:
+      labels:
+        component: server
+    spec:
+      containers:
+        - name: server
+          image: daniladanila2378/rent-flat2-server
+          ports:
+            - containerPort: 3000
+          env:
+            # temporary
+            - name: NODE_ENV
+              value: 'production'
+            - name: PORT
+              value: '3000'
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: jwtsecret
+                  key: JWT_SECRET
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: mongouri
+                  key: MONGO_URI
+            - name: AWS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: awskeyid
+                  key: AWS_KEY_ID
+            - name: AWS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: awsaccesskey
+                  key: AWS_ACCESS_KEY
+            - name: AWS_S3_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: awss3bucket
+                  key: AWS_S3_BUCKET
+            - name: FACEBOOK_AUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: facebookauthclientid
+                  key: FACEBOOK_AUTH_CLIENT_ID
+            - name: FACEBOOK_AUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: facebookauthclientsecret
+                  key: FACEBOOK_AUTH_CLIENT_SECRET
+            - name: GOOGLE_AUTH_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: googleauthclientid
+                  key: GOOGLE_AUTH_CLIENT_ID
+            - name: GOOGLE_AUTH_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: googleauthclientsecret
+                  key: GOOGLE_AUTH_CLIENT_SECRET
+            - name: SENDGIRD_USER
+              valueFrom:
+                secretKeyRef:
+                  name: sendgriduser
+                  key: SENDGIRD_USER
+            - name: SENDGIRD_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sendgridpassword
+                  key: SENDGIRD_PASSWORD
