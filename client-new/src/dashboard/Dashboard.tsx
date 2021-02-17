@@ -1,7 +1,6 @@
 import React from 'react';
 import { useQuery, gql } from '@apollo/client';
-
-import styles from './Dashboard.module.scss';
+import Button from '@material-ui/core/Button';
 
 const GET_FLATS = gql`
   query {
@@ -25,8 +24,11 @@ const Dashboard = () => {
 
   // @ts-ignore: add type TODO
   return data.getFlats.map((flat) => (
-    <div className={styles.item} key={flat.price}>
+    <div key={flat.price}>
       {flat.price}
+      <Button variant="contained" color="primary">
+        Hello World
+      </Button>
     </div>
   ));
 };

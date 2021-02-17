@@ -9,19 +9,23 @@ import {
 import { BrowserRouter, Route } from 'react-router-dom';
 import Dashboard from './dashboard';
 import Login from './login';
-
-import './index.scss';
+import SignUp from './sign-up';
+import App from './App';
 
 const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
   cache: new InMemoryCache({}),
   uri: 'http://localhost:4000/graphql',
+  credentials: 'include',
 });
 
 ReactDOM.render(
   <ApolloProvider client={client}>
     <BrowserRouter>
-      <Route exact path="/" component={Dashboard} />
-      <Route exact path="/login" component={Login} />
+      <App>
+        <Route exact path="/" component={Dashboard} />
+        <Route exact path="/login" component={Login} />
+        <Route exact path="/sign-up" component={SignUp} />
+      </App>
     </BrowserRouter>
   </ApolloProvider>,
   document.getElementById('root')

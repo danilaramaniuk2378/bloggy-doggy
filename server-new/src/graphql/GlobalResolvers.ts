@@ -1,4 +1,5 @@
 import flatResolvers from './flat/FlatResolvers';
+import userResolvers from './user/UserResolvers';
 
 const globalResolvers = {
   Query: {
@@ -6,6 +7,7 @@ const globalResolvers = {
   },
   Mutation: {
     addFlat: flatResolvers.addFlat,
+    signUp: userResolvers.signUp,
   },
 };
 
