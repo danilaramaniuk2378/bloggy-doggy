@@ -1,88 +1,63 @@
+import 'dotenv/config';
+import 'reflect-metadata';
+import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
-import cors from 'cors';
-import express, { Request, Response, NextFunction } from 'express';
+import { buildSchema } from 'type-graphql';
+import { createConnection } from 'typeorm';
 import cookieParser from 'cookie-parser';
 import { verify } from 'jsonwebtoken';
-import User from './graphql/user/UserModel';
-import { getTokens } from './helpers/get-tokens';
-import { connectDatabase } from './database';
-import { FE_URL, ACCESS_TOKEN_SECRET, REFRESH_TOKEN_SECRET } from './config';
-import globalResolvers from './graphql/GlobalResolvers';
-import globalQuery from './graphql/TypeDefinitions';
+import UserResolver from './graphql/user/UserResolver';
+import { User } from './entity/User';
+import { createAccessToken, createRefreshToken } from './graphql/user/auth';
+import { sendRefreshToken } from './sendRefreshToken';
 
 (async () => {
-  try {
-    const info = await connectDatabase();
-    console.log(`Connected to mongodb 🍃 at ${info.host}:${info.port}/${info.name}`);
-  } catch (error) {
-    console.error('Unable to connect to database');
-    process.exit(1);
-  }
-
   const app = express();
 
-  const corsOptions = {
-    origin: FE_URL,
-    credentials: true,
-  };
-
-  app.use(cors(corsOptions));
   app.use(cookieParser());
 
-  app.use(async (req: Request, res: Response, next: NextFunction) => {
-    const refreshToken = req.cookies['refresh-token'];
-    const accessToken = req.cookies['access-token'];
+  app.post('/refresh_token', async (req, res) => {
+    const token = req.cookies.jid;
 
-    if (!refreshToken && !accessToken) {
-      return next();
+    if (!token) {
+      return res.send({ ok: false, accessToken: '' });
     }
 
+    let payload: any = null;
     try {
-      const data = verify(accessToken, ACCESS_TOKEN_SECRET) as any;
-      // @ts-ignore
-      req.user = data.userId;
-      return next();
-    } catch (error) {
-      console.log(error);
+      payload = verify(token, process.env.REFRESH_TOKEN_SECRET!);
+    } catch (err) {
+      console.log(err);
+      return res.send({ ok: false, accessToken: '' });
     }
 
-    if (!refreshToken) {
-      return next();
-    }
+    const user = await User.findOne({ id: payload.userId });
 
-    let data;
-
-    try {
-      data = verify(refreshToken, REFRESH_TOKEN_SECRET) as any;
-    } catch {
-      return next();
-    }
-
-    const user = await User.findOne({ id: data.userId });
-
-    // TODO: check is the user exists
     if (!user) {
-      return next();
+      return res.send({ ok: false, accessToken: '' });
     }
 
-    const tokens = getTokens(user);
+    if (user.tokenVersion !== payload.tokenVersion) {
+      return res.send({ ok: false, accessToken: '' });
+    }
 
-    res.cookie('refresh-token', tokens.refreshToken);
-    res.cookie('access-token', tokens.accessToken);
+    sendRefreshToken(res, createRefreshToken(user));
 
-    // @ts-ignore
-    req.userId = user.id;
-
-    next();
+    return res.send({ ok: true, accessToken: createAccessToken(user) });
   });
 
-  const server = new ApolloServer({
-    resolvers: globalResolvers,
-    typeDefs: globalQuery,
-    context: ({ req, res }): { req: Request; res: Response } => ({ req, res }),
-    tracing: true,
+  await createConnection();
+
+  const apolloServer = new ApolloServer({
+    schema: await buildSchema({
+      resolvers: [UserResolver],
+    }),
+    context: ({ req, res }) => ({ req, res }),
   });
 
-  server.applyMiddleware({ app, cors: corsOptions });
-  app.listen({ port: 4000 }, () => console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`));
+  apolloServer.applyMiddleware({ app });
+
+  app.listen(4000, () => {
+    console.log('express server started');
+  });
 })();
