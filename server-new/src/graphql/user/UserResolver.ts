@@ -9,6 +9,7 @@ import {
   UseMiddleware,
   Int,
 } from 'type-graphql';
+import { verify } from 'jsonwebtoken';
 import { hash, compare } from 'bcryptjs';
 import { getConnection } from 'typeorm';
 import { User } from '../../entity/User';
@@ -21,15 +22,47 @@ import { sendRefreshToken } from '../../sendRefreshToken';
 class LoginResponse {
   @Field()
   accessToken: string;
+  @Field(() => User)
+  user: User;
 }
 
 @Resolver()
 export default class UserResolver {
   @Query(() => String)
+  hello(): string {
+    return 'HELLO TEST';
+  }
+
+  @Query(() => String)
   @UseMiddleware(isAuth)
   bye(@Ctx() { payload }: MyContext) {
     console.log(payload);
     return `your user id is ${payload!.userId}`;
+  }
+
+  @Mutation(() => Boolean)
+  async logout(@Ctx() { res }: MyContext) {
+    sendRefreshToken(res, '');
+
+    return true;
+  }
+
+  @Query(() => User, { nullable: true })
+  me(@Ctx() context: MyContext) {
+    const authorization = context.req.headers['authorization'];
+
+    if (!authorization) {
+      return null;
+    }
+
+    try {
+      const token = authorization.split(' ')[1];
+      const payload: any = verify(token, process.env.ACCESS_TOKEN_SECRET!);
+      return User.findOne(payload.userId);
+    } catch (err) {
+      console.log(err);
+      return null;
+    }
   }
 
   @Mutation(() => Boolean)
@@ -66,6 +99,7 @@ export default class UserResolver {
 
     return {
       accessToken: createAccessToken(user),
+      user,
     };
   }
 

@@ -2,21 +2,16 @@ import React from 'react';
 import { Formik, Form, Field } from 'formik';
 import { Button, LinearProgress, Typography } from '@material-ui/core';
 import { TextField } from 'formik-material-ui';
-import { useMutation, gql } from '@apollo/client';
-
-const SIGN_UP = gql`
-  mutation SignUp($email: String, $password: String) {
-    signUp(email: $email, password: $password)
-  }
-`;
+import { RouteComponentProps } from 'react-router-dom';
+import { useRegisterMutation } from '../generated/graphql';
 
 interface Values {
   email: string;
   password: string;
 }
 
-const SignUp = () => {
-  const [signUp, { loading }] = useMutation(SIGN_UP);
+const SignUp = ({ history }: RouteComponentProps) => {
+  const [register, { loading }] = useRegisterMutation();
 
   return (
     <div>
@@ -39,10 +34,12 @@ const SignUp = () => {
           }
           return errors;
         }}
-        onSubmit={(values) => {
-          signUp({
+        onSubmit={async (values) => {
+          await register({
             variables: { email: values.email, password: values.password },
           });
+
+          history.push('/');
         }}
       >
         {({ submitForm }) => (

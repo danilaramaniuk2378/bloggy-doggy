@@ -1,20 +1,12 @@
 import React from 'react';
-import { useQuery, gql } from '@apollo/client';
-import Button from '@material-ui/core/Button';
-
-const GET_FLATS = gql`
-  query {
-    getFlats {
-      _id
-      price
-    }
-  }
-`;
+import { useHelloQuery } from '../generated/graphql';
 
 const Dashboard = () => {
-  const { loading, error, data } = useQuery(GET_FLATS);
+  const { loading, error, data } = useHelloQuery({
+    fetchPolicy: 'network-only',
+  });
 
-  if (loading) {
+  if (loading || !data) {
     return <p>Loading...</p>;
   }
 
@@ -22,15 +14,16 @@ const Dashboard = () => {
     return <p>Error :(</p>;
   }
 
-  // @ts-ignore: add type TODO
-  return data.getFlats.map((flat) => (
-    <div key={flat.price}>
-      {flat.price}
-      <Button variant="contained" color="primary">
-        Hello World
-      </Button>
-    </div>
-  ));
+  return (
+    <>
+      <div>{data.hello}</div>
+      <div>
+        {data.users.map((user) => (
+          <li key={user.id}>{user.email}</li>
+        ))}
+      </div>
+    </>
+  );
 };
 
 export default Dashboard;

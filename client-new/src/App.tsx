@@ -1,19 +1,10 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import Button from '@material-ui/core/Button';
-import { Link } from 'react-router-dom';
+import { setAccessToken } from './accessToken';
+import Header from './header';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   root: {
-    flexGrow: 1,
-  },
-  menuButton: {
-    marginRight: theme.spacing(2),
-  },
-  title: {
     flexGrow: 1,
   },
 }));
@@ -24,22 +15,27 @@ interface Props {
 
 const App = ({ children }: Props) => {
   const classes = useStyles();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://localhost:4000/refresh_token', {
+      method: 'POST',
+      credentials: 'include',
+    }).then(async (x) => {
+      const { accessToken } = await x.json();
+
+      setAccessToken(accessToken);
+      setLoading(false);
+    });
+  }, []);
+
+  if (loading) {
+    return <div>loading...</div>;
+  }
 
   return (
     <div className={classes.root}>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" className={classes.title}>
-            Rent App
-          </Typography>
-          <Button component={Link} to="/sign-up" color="inherit">
-            Sign Up
-          </Button>
-          <Button component={Link} to="/login" color="inherit">
-            Login
-          </Button>
-        </Toolbar>
-      </AppBar>
+      <Header />
       {children}
     </div>
   );
