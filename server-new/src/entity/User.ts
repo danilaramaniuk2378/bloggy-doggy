@@ -9,11 +9,15 @@ export class User extends BaseEntity {
   id: number;
 
   @Field()
-  @Column('text')
-  email: string;
+  @Column({ unique: true })
+  username!: string;
 
-  @Column('text')
-  password: string;
+  @Field()
+  @Column({ unique: true })
+  email!: string;
+
+  @Column()
+  password!: string;
 
   @Column('int', { default: 0 })
   tokenVersion: number;

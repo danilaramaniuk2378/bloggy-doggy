@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import { Button, LinearProgress, Typography } from '@material-ui/core';
 import { TextField } from 'formik-material-ui';
@@ -12,6 +12,8 @@ interface Values {
 }
 
 const Login = ({ history }: RouteComponentProps) => {
+  // TODO: use formik set error
+  const [error, setError] = useState<string | null>(null);
   const [login, { loading }] = useLoginMutation();
 
   return (
@@ -51,10 +53,13 @@ const Login = ({ history }: RouteComponentProps) => {
           });
 
           if (response && response.data) {
-            setAccessToken(response.data.login.accessToken);
+            if (response.data?.login.errors) {
+              setError(response.data.login.errors[0].message);
+            } else if (response.data?.login.accessToken) {
+              setAccessToken(response.data.login.accessToken);
+              history.push('/');
+            }
           }
-
-          history.push('/');
         }}
       >
         {({ submitForm }) => (
@@ -87,6 +92,7 @@ const Login = ({ history }: RouteComponentProps) => {
           </Form>
         )}
       </Formik>
+      {error && <div>{error}</div>}
     </div>
   );
 };

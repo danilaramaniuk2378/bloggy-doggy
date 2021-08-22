@@ -16,18 +16,18 @@ export type Scalars = {
   Float: number;
 };
 
-export type LoginResponse = {
-  __typename?: 'LoginResponse';
-  accessToken: Scalars['String'];
-  user: User;
+export type FieldError = {
+  __typename?: 'FieldError';
+  field: Scalars['String'];
+  message: Scalars['String'];
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
   logout: Scalars['Boolean'];
   revokeRefreshTokensForUser: Scalars['Boolean'];
-  login: LoginResponse;
-  register: Scalars['Boolean'];
+  login: UserResponse;
+  register: UserResponse;
 };
 
 
@@ -43,8 +43,7 @@ export type MutationLoginArgs = {
 
 
 export type MutationRegisterArgs = {
-  password: Scalars['String'];
-  email: Scalars['String'];
+  options: UsernamePasswordInput;
 };
 
 export type Query = {
@@ -58,8 +57,28 @@ export type Query = {
 export type User = {
   __typename?: 'User';
   id: Scalars['Int'];
+  username: Scalars['String'];
   email: Scalars['String'];
 };
+
+export type UserResponse = {
+  __typename?: 'UserResponse';
+  errors?: Maybe<Array<FieldError>>;
+  user?: Maybe<User>;
+  accessToken?: Maybe<Scalars['String']>;
+};
+
+export type UsernamePasswordInput = {
+  email: Scalars['String'];
+  username: Scalars['String'];
+  password: Scalars['String'];
+};
+
+export type RegularErrorFragment = { __typename?: 'FieldError', field: string, message: string };
+
+export type RegularUserFragment = { __typename?: 'User', id: number, email: string, username: string };
+
+export type RegularUserResponseFragment = { __typename?: 'UserResponse', accessToken?: Maybe<string>, errors?: Maybe<Array<{ __typename?: 'FieldError', field: string, message: string }>>, user?: Maybe<{ __typename?: 'User', id: number, email: string, username: string }> };
 
 export type HelloQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -74,7 +93,7 @@ export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: Maybe<{ __typename?: 'User', id: number, email: string }> };
+export type MeQuery = { __typename?: 'Query', me?: Maybe<{ __typename?: 'User', id: number, email: string, username: string }> };
 
 export type LoginMutationVariables = Exact<{
   email: Scalars['String'];
@@ -82,15 +101,14 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'LoginResponse', accessToken: string, user: { __typename?: 'User', id: number, email: string } } };
+export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'UserResponse', accessToken?: Maybe<string>, errors?: Maybe<Array<{ __typename?: 'FieldError', field: string, message: string }>>, user?: Maybe<{ __typename?: 'User', id: number, email: string, username: string }> } };
 
 export type RegisterMutationVariables = Exact<{
-  email: Scalars['String'];
-  password: Scalars['String'];
+  options: UsernamePasswordInput;
 }>;
 
 
-export type RegisterMutation = { __typename?: 'Mutation', register: boolean };
+export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'UserResponse', accessToken?: Maybe<string>, errors?: Maybe<Array<{ __typename?: 'FieldError', field: string, message: string }>>, user?: Maybe<{ __typename?: 'User', id: number, email: string, username: string }> } };
 
 export type ByeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -166,37 +184,41 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  LoginResponse: ResolverTypeWrapper<LoginResponse>;
+  FieldError: ResolverTypeWrapper<FieldError>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Mutation: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   Query: ResolverTypeWrapper<{}>;
   User: ResolverTypeWrapper<User>;
+  UserResponse: ResolverTypeWrapper<UserResponse>;
+  UsernamePasswordInput: UsernamePasswordInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
-  LoginResponse: LoginResponse;
+  FieldError: FieldError;
   String: Scalars['String'];
   Mutation: {};
   Boolean: Scalars['Boolean'];
   Int: Scalars['Int'];
   Query: {};
   User: User;
+  UserResponse: UserResponse;
+  UsernamePasswordInput: UsernamePasswordInput;
 };
 
-export type LoginResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['LoginResponse'] = ResolversParentTypes['LoginResponse']> = {
-  accessToken?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+export type FieldErrorResolvers<ContextType = any, ParentType extends ResolversParentTypes['FieldError'] = ResolversParentTypes['FieldError']> = {
+  field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   revokeRefreshTokensForUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRevokeRefreshTokensForUserArgs, 'userId'>>;
-  login?: Resolver<ResolversTypes['LoginResponse'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'password' | 'email'>>;
-  register?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRegisterArgs, 'password' | 'email'>>;
+  login?: Resolver<ResolversTypes['UserResponse'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'password' | 'email'>>;
+  register?: Resolver<ResolversTypes['UserResponse'], ParentType, ContextType, RequireFields<MutationRegisterArgs, 'options'>>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
@@ -208,19 +230,52 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   id?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  username?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['UserResponse'] = ResolversParentTypes['UserResponse']> = {
+  errors?: Resolver<Maybe<Array<ResolversTypes['FieldError']>>, ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  accessToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
-  LoginResponse?: LoginResponseResolvers<ContextType>;
+  FieldError?: FieldErrorResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
+  UserResponse?: UserResponseResolvers<ContextType>;
 };
 
 
-
+export const RegularErrorFragmentDoc = gql`
+    fragment RegularError on FieldError {
+  field
+  message
+}
+    `;
+export const RegularUserFragmentDoc = gql`
+    fragment RegularUser on User {
+  id
+  email
+  username
+}
+    `;
+export const RegularUserResponseFragmentDoc = gql`
+    fragment RegularUserResponse on UserResponse {
+  accessToken
+  errors {
+    ...RegularError
+  }
+  user {
+    ...RegularUser
+  }
+}
+    ${RegularErrorFragmentDoc}
+${RegularUserFragmentDoc}`;
 export const HelloDocument = gql`
     query Hello {
   hello
@@ -292,6 +347,7 @@ export const MeDocument = gql`
   me {
     id
     email
+    username
   }
 }
     `;
@@ -325,14 +381,10 @@ export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
 export const LoginDocument = gql`
     mutation Login($email: String!, $password: String!) {
   login(email: $email, password: $password) {
-    accessToken
-    user {
-      id
-      email
-    }
+    ...RegularUserResponse
   }
 }
-    `;
+    ${RegularUserResponseFragmentDoc}`;
 export type LoginMutationFn = Apollo.MutationFunction<LoginMutation, LoginMutationVariables>;
 
 /**
@@ -361,10 +413,12 @@ export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
 export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
 export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;
 export const RegisterDocument = gql`
-    mutation Register($email: String!, $password: String!) {
-  register(email: $email, password: $password)
+    mutation Register($options: UsernamePasswordInput!) {
+  register(options: $options) {
+    ...RegularUserResponse
+  }
 }
-    `;
+    ${RegularUserResponseFragmentDoc}`;
 export type RegisterMutationFn = Apollo.MutationFunction<RegisterMutation, RegisterMutationVariables>;
 
 /**
@@ -380,8 +434,7 @@ export type RegisterMutationFn = Apollo.MutationFunction<RegisterMutation, Regis
  * @example
  * const [registerMutation, { data, loading, error }] = useRegisterMutation({
  *   variables: {
- *      email: // value for 'email'
- *      password: // value for 'password'
+ *      options: // value for 'options'
  *   },
  * });
  */

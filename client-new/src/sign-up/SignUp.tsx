@@ -1,16 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import { Button, LinearProgress, Typography } from '@material-ui/core';
 import { TextField } from 'formik-material-ui';
 import { RouteComponentProps } from 'react-router-dom';
-import { useRegisterMutation } from '../generated/graphql';
+import { useRegisterMutation, MeDocument, MeQuery } from '../generated/graphql';
+import { setAccessToken } from '../accessToken';
 
 interface Values {
   email: string;
   password: string;
+  username: string;
 }
 
 const SignUp = ({ history }: RouteComponentProps) => {
+  // TODO: use formik set error
+  const [error, setError] = useState<string | null>(null);
   const [register, { loading }] = useRegisterMutation();
 
   return (
@@ -22,6 +26,7 @@ const SignUp = ({ history }: RouteComponentProps) => {
         initialValues={{
           email: '',
           password: '',
+          username: '',
         }}
         validate={(values) => {
           const errors: Partial<Values> = {};
@@ -35,15 +40,40 @@ const SignUp = ({ history }: RouteComponentProps) => {
           return errors;
         }}
         onSubmit={async (values) => {
-          await register({
-            variables: { email: values.email, password: values.password },
+          const response = await register({
+            variables: { options: values },
+            update: (store, { data }): void => {
+              if (data) {
+                store.writeQuery<MeQuery>({
+                  query: MeDocument,
+                  data: {
+                    me: data.register.user,
+                  },
+                });
+              }
+            },
           });
 
-          history.push('/');
+          if (response && response.data) {
+            if (response.data?.register.errors) {
+              setError(response.data.register.errors[0].message);
+            } else if (response.data?.register.accessToken) {
+              setAccessToken(response.data.register.accessToken);
+              history.push('/');
+            }
+          }
         }}
       >
         {({ submitForm }) => (
           <Form>
+            <Field
+              component={TextField}
+              name="username"
+              placeholder="username"
+              label="Username"
+              disabled={loading}
+            />
+            <br />
             <Field
               component={TextField}
               name="email"
@@ -72,6 +102,7 @@ const SignUp = ({ history }: RouteComponentProps) => {
           </Form>
         )}
       </Formik>
+      {error && <div>{error}</div>}
     </div>
   );
 };

@@ -17,13 +17,27 @@ import { MyContext } from '../../MyContext';
 import { createAccessToken, createRefreshToken } from './auth';
 import { isAuth } from '../isAuth';
 import { sendRefreshToken } from '../../sendRefreshToken';
+import { UsernamePasswordInput } from './UsernamePasswordInput';
+import validateRegister from './validateRegister';
 
 @ObjectType()
-class LoginResponse {
+export class FieldError {
   @Field()
-  accessToken: string;
-  @Field(() => User)
-  user: User;
+  field: string;
+  @Field()
+  message: string;
+}
+
+@ObjectType()
+class UserResponse {
+  @Field(() => [FieldError], { nullable: true })
+  errors?: FieldError[];
+
+  @Field(() => User, { nullable: true })
+  user?: User;
+
+  @Field(() => String, { nullable: true })
+  accessToken?: string;
 }
 
 @Resolver()
@@ -77,22 +91,36 @@ export default class UserResolver {
     return User.find();
   }
 
-  @Mutation(() => LoginResponse)
+  @Mutation(() => UserResponse)
   async login(
     @Arg('email') email: string,
     @Arg('password') password: string,
     @Ctx() { res }: MyContext
-  ): Promise<LoginResponse> {
+  ): Promise<UserResponse> {
     const user = await User.findOne({ where: { email } });
 
     if (!user) {
-      throw new Error('no such user');
+      return {
+        errors: [
+          {
+            field: 'usernameOrEmail',
+            message: 'no such user',
+          },
+        ],
+      };
     }
 
     const valid = await compare(password, user.password);
 
     if (!valid) {
-      throw new Error('wrong password');
+      return {
+        errors: [
+          {
+            field: 'usernameOrEmail',
+            message: 'wrong password',
+          },
+        ],
+      };
     }
 
     sendRefreshToken(res, createRefreshToken(user));
@@ -103,21 +131,55 @@ export default class UserResolver {
     };
   }
 
-  @Mutation(() => Boolean)
-  async register(@Arg('email') email: string, @Arg('password') password: string): Promise<boolean> {
+  @Mutation(() => UserResponse)
+  async register(
+    @Arg('options') options: UsernamePasswordInput,
+    @Ctx() { res }: MyContext
+  ): Promise<UserResponse> {
+    const errors = validateRegister(options);
+
+    if (errors) {
+      return { errors };
+    }
+
+    const { password, email, username } = options;
     const hashedPassword = await hash(password, 12);
+    let user;
 
     try {
-      await User.insert({
-        email,
-        password: hashedPassword,
-      });
+      const result = await getConnection()
+        .createQueryBuilder()
+        .insert()
+        .into(User)
+        .values({
+          username: username,
+          email: email,
+          password: hashedPassword,
+        })
+        .returning('*')
+        .execute();
+
+      user = result.raw[0];
     } catch (err) {
       console.log(err);
 
-      return false;
+      if (err.code === '23505') {
+        return {
+          errors: [
+            {
+              field: 'username',
+              message: 'username or email already taken',
+            },
+          ],
+        };
+      }
     }
 
-    return true;
+    sendRefreshToken(res, createRefreshToken(user));
+
+    return {
+      accessToken: createAccessToken(user),
+      user,
+    };
   }
 }

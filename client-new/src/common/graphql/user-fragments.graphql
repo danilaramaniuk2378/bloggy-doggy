@@ -1,0 +1,20 @@
+fragment RegularError on FieldError {
+  field
+  message
+}
+
+fragment RegularUser on User {
+  id
+  email
+  username
+}
+
+fragment RegularUserResponse on UserResponse {
+  accessToken
+  errors {
+    ...RegularError
+  }
+  user {
+    ...RegularUser
+  }
+}

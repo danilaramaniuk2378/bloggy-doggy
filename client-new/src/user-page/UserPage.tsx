@@ -11,8 +11,6 @@ const UserPage = () => {
   }
 
   if (error) {
-    console.log(error);
-
     return <div>error</div>;
   }
 

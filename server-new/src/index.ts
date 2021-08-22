@@ -59,6 +59,7 @@ import { sendRefreshToken } from './sendRefreshToken';
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers: [UserResolver],
+      validate: false,
     }),
     context: ({ req, res }) => ({ req, res }),
   });
