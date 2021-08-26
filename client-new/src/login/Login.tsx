@@ -1,100 +1,101 @@
 import React, { useState } from 'react';
-import { Formik, Form, Field } from 'formik';
-import { Button, LinearProgress, Typography } from '@material-ui/core';
-import { TextField } from 'formik-material-ui';
-import { RouteComponentProps } from 'react-router-dom';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
+import { Button, TextField, Typography } from '@material-ui/core';
+import { Alert } from '@material-ui/lab';
+import { RouteComponentProps, Link } from 'react-router-dom';
 import { useLoginMutation, MeDocument, MeQuery } from '../generated/graphql';
 import { setAccessToken } from '../accessToken';
+import withHeader from '../common/hocs/with-header';
 
-interface Values {
-  email: string;
-  password: string;
-}
+const validationSchema = yup.object({
+  email: yup
+    .string()
+    .email('Enter a valid email')
+    .required('Email is required'),
+  password: yup.string().required('Password is required'),
+});
 
 const Login = ({ history }: RouteComponentProps) => {
-  // TODO: use formik set error
   const [error, setError] = useState<string | null>(null);
   const [login, { loading }] = useLoginMutation();
 
-  return (
-    <div>
-      <Typography variant="h3" component="h3">
-        Login
-      </Typography>
-      <Formik
-        initialValues={{
-          email: '',
-          password: '',
-        }}
-        validate={(values) => {
-          const errors: Partial<Values> = {};
-          if (!values.email) {
-            errors.email = 'Required';
-          } else if (
-            !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)
-          ) {
-            errors.email = 'Invalid email address';
+  const formik = useFormik({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      const response = await login({
+        variables: { email: values.email, password: values.password },
+        update: (store, { data }): void => {
+          if (data) {
+            store.writeQuery<MeQuery>({
+              query: MeDocument,
+              data: {
+                me: data.login.user,
+              },
+            });
           }
-          return errors;
-        }}
-        onSubmit={async (values) => {
-          const response = await login({
-            variables: { email: values.email, password: values.password },
-            update: (store, { data }): void => {
-              if (data) {
-                store.writeQuery<MeQuery>({
-                  query: MeDocument,
-                  data: {
-                    me: data.login.user,
-                  },
-                });
-              }
-            },
-          });
+        },
+      });
 
-          if (response && response.data) {
-            if (response.data?.login.errors) {
-              setError(response.data.login.errors[0].message);
-            } else if (response.data?.login.accessToken) {
-              setAccessToken(response.data.login.accessToken);
-              history.push('/');
-            }
-          }
-        }}
-      >
-        {({ submitForm }) => (
-          <Form>
-            <Field
-              component={TextField}
-              name="email"
-              type="email"
-              label="Email"
-              disabled={loading}
-            />
-            <br />
-            <Field
-              component={TextField}
-              type="password"
-              label="Password"
-              name="password"
-              disabled={loading}
-            />
-            {loading && <LinearProgress />}
-            <br />
-            <Button
-              variant="contained"
-              color="primary"
-              disabled={loading}
-              onClick={submitForm}
-            >
-              Submit
-            </Button>
-          </Form>
-        )}
-      </Formik>
-      {error && <div>{error}</div>}
-    </div>
+      if (response && response.data) {
+        if (response.data?.login.errors) {
+          setError(response.data.login.errors[0].message);
+        } else if (response.data?.login.accessToken) {
+          setAccessToken(response.data.login.accessToken);
+          history.push('/');
+        }
+      }
+    },
+  });
+
+  return (
+    <>
+      <form onSubmit={formik.handleSubmit}>
+        <TextField
+          fullWidth
+          id="email"
+          name="email"
+          label="Email"
+          value={formik.values.email}
+          onChange={formik.handleChange}
+          error={formik.touched.email && Boolean(formik.errors.email)}
+          helperText={formik.touched.email && formik.errors.email}
+          disabled={loading}
+        />
+        <TextField
+          fullWidth
+          id="password"
+          name="password"
+          label="Password"
+          type="password"
+          value={formik.values.password}
+          onChange={formik.handleChange}
+          error={formik.touched.password && Boolean(formik.errors.password)}
+          helperText={formik.touched.password && formik.errors.password}
+          disabled={loading}
+        />
+        <br /> <br />
+        <Button
+          disabled={loading}
+          color="primary"
+          variant="contained"
+          fullWidth
+          type="submit"
+        >
+          Submit
+        </Button>
+        <Typography>
+          <Link to="/forgot-password">Forgot password?</Link>
+        </Typography>
+      </form>
+      <br />
+      {error && <Alert severity="error">Error — {error}</Alert>}
+    </>
   );
 };
 
-export default Login;
+export default withHeader(Login, 'Login');

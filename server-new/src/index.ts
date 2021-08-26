@@ -2,6 +2,7 @@ import 'dotenv/config';
 import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
+import Redis from 'ioredis';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { createConnection } from 'typeorm';
@@ -14,6 +15,7 @@ import { sendRefreshToken } from './sendRefreshToken';
 
 (async () => {
   const app = express();
+  const redis = new Redis();
 
   app.use(
     cors({
@@ -61,7 +63,7 @@ import { sendRefreshToken } from './sendRefreshToken';
       resolvers: [UserResolver],
       validate: false,
     }),
-    context: ({ req, res }) => ({ req, res }),
+    context: ({ req, res }) => ({ req, res, redis }),
   });
 
   apolloServer.applyMiddleware({ app, cors: false });

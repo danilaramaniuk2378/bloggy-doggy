@@ -28,6 +28,7 @@ export type Mutation = {
   revokeRefreshTokensForUser: Scalars['Boolean'];
   login: UserResponse;
   register: UserResponse;
+  forgotPassword: Scalars['Boolean'];
 };
 
 
@@ -44,6 +45,11 @@ export type MutationLoginArgs = {
 
 export type MutationRegisterArgs = {
   options: UsernamePasswordInput;
+};
+
+
+export type MutationForgotPasswordArgs = {
+  email: Scalars['String'];
 };
 
 export type Query = {
@@ -84,6 +90,13 @@ export type HelloQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type HelloQuery = { __typename?: 'Query', hello: string, users: Array<{ __typename?: 'User', id: number, email: string }> };
+
+export type ForgotPasswordMutationVariables = Exact<{
+  email: Scalars['String'];
+}>;
+
+
+export type ForgotPasswordMutation = { __typename?: 'Mutation', forgotPassword: boolean };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -219,6 +232,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   revokeRefreshTokensForUser?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationRevokeRefreshTokensForUserArgs, 'userId'>>;
   login?: Resolver<ResolversTypes['UserResponse'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'password' | 'email'>>;
   register?: Resolver<ResolversTypes['UserResponse'], ParentType, ContextType, RequireFields<MutationRegisterArgs, 'options'>>;
+  forgotPassword?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationForgotPasswordArgs, 'email'>>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
@@ -312,6 +326,37 @@ export function useHelloLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Hell
 export type HelloQueryHookResult = ReturnType<typeof useHelloQuery>;
 export type HelloLazyQueryHookResult = ReturnType<typeof useHelloLazyQuery>;
 export type HelloQueryResult = Apollo.QueryResult<HelloQuery, HelloQueryVariables>;
+export const ForgotPasswordDocument = gql`
+    mutation ForgotPassword($email: String!) {
+  forgotPassword(email: $email)
+}
+    `;
+export type ForgotPasswordMutationFn = Apollo.MutationFunction<ForgotPasswordMutation, ForgotPasswordMutationVariables>;
+
+/**
+ * __useForgotPasswordMutation__
+ *
+ * To run a mutation, you first call `useForgotPasswordMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useForgotPasswordMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [forgotPasswordMutation, { data, loading, error }] = useForgotPasswordMutation({
+ *   variables: {
+ *      email: // value for 'email'
+ *   },
+ * });
+ */
+export function useForgotPasswordMutation(baseOptions?: Apollo.MutationHookOptions<ForgotPasswordMutation, ForgotPasswordMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ForgotPasswordMutation, ForgotPasswordMutationVariables>(ForgotPasswordDocument, options);
+      }
+export type ForgotPasswordMutationHookResult = ReturnType<typeof useForgotPasswordMutation>;
+export type ForgotPasswordMutationResult = Apollo.MutationResult<ForgotPasswordMutation>;
+export type ForgotPasswordMutationOptions = Apollo.BaseMutationOptions<ForgotPasswordMutation, ForgotPasswordMutationVariables>;
 export const LogoutDocument = gql`
     mutation Logout {
   logout

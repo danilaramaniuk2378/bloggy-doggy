@@ -16,8 +16,11 @@
     "@types/bcryptjs": "^2.4.2",
     "@types/cookie-parser": "^1.4.2",
     "@types/express": "^4.17.11",
+    "@types/ioredis": "^4.27.0",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/node": "^14.14.25",
+    "@types/nodemailer": "^6.4.4",
+    "@types/uuid": "^8.3.1",
     "@typescript-eslint/eslint-plugin": "^4.15.0",
     "@typescript-eslint/parser": "^4.15.0",
     "eslint": "^7.19.0",
@@ -37,10 +40,13 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "graphql": "^15.5.0",
+    "ioredis": "^4.27.8",
     "jsonwebtoken": "^8.5.1",
+    "nodemailer": "^6.6.3",
     "pg": "^8.7.1",
     "reflect-metadata": "^0.1.13",
     "type-graphql": "^1.1.1",
-    "typeorm": "^0.2.37"
+    "typeorm": "^0.2.37",
+    "uuid": "^8.3.2"
   }
 }

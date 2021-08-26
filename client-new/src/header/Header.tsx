@@ -12,13 +12,17 @@ const useStyles = makeStyles(() => ({
   title: {
     flexGrow: 1,
   },
+  link: {
+    textDecoration: 'none',
+    color: 'white',
+  },
 }));
 
 const Header = () => {
   const { data, loading } = useMeQuery();
   const [logout, { client }] = useLogoutMutation();
 
-  const isLoggedIn = !loading && data && data.me;
+  const isLoggedIn = data && data.me;
 
   const classes = useStyles();
 
@@ -26,34 +30,41 @@ const Header = () => {
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" className={classes.title}>
-          Rent App
+          <Link className={classes.link} to="/">
+            Rent App
+          </Link>
         </Typography>
-        {!isLoggedIn && (
-          <Button component={Link} to="/sign-up" color="inherit">
-            Sign Up
-          </Button>
-        )}
-        {!isLoggedIn && (
-          <Button component={Link} to="/login" color="inherit">
-            Login
-          </Button>
-        )}
-        {isLoggedIn && (
-          <Button component={Link} to="/user-page" color="inherit">
-            User Page
-          </Button>
-        )}
-        {isLoggedIn && (
-          <Button
-            onClick={async () => {
-              await logout();
-              setAccessToken('');
-              await client!.resetStore();
-            }}
-            color="inherit"
-          >
-            Log Out
-          </Button>
+        {!loading && (
+          <>
+            {!isLoggedIn && (
+              <Button component={Link} to="/sign-up" color="inherit">
+                Sign Up
+              </Button>
+            )}
+            {!isLoggedIn && (
+              <Button component={Link} to="/login" color="inherit">
+                Login
+              </Button>
+            )}
+            {isLoggedIn && (
+              <Button component={Link} to="/user-page" color="inherit">
+                User Page
+              </Button>
+            )}
+            {isLoggedIn && (
+              <Button
+                onClick={async () => {
+                  await logout();
+                  setAccessToken('');
+                  // TODO: set me to null
+                  await client!.resetStore();
+                }}
+                color="inherit"
+              >
+                Log Out
+              </Button>
+            )}
+          </>
         )}
       </Toolbar>
     </AppBar>

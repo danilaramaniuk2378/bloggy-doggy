@@ -19,6 +19,9 @@ import SignUp from './sign-up';
 import UserPage from './user-page';
 import { getAccessToken, setAccessToken } from './accessToken';
 import App from './App';
+import UserRoute from './common/routes/UserRoute';
+import GuestRoute from './common/routes/GuestRoute';
+import ForgotPassword from './forgot-password';
 
 const cache = new InMemoryCache({});
 
@@ -88,8 +91,8 @@ const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
       },
     }),
     onError(({ graphQLErrors, networkError }) => {
-      console.log('graphQLErrors', graphQLErrors);
-      console.log('networkError', networkError);
+      console.error('graphQLErrors', graphQLErrors);
+      console.error('networkError', networkError);
     }),
     requestLink,
     new HttpLink({
@@ -105,9 +108,10 @@ ReactDOM.render(
     <BrowserRouter>
       <App>
         <Route exact path="/" component={Dashboard} />
-        <Route exact path="/login" component={Login} />
-        <Route exact path="/sign-up" component={SignUp} />
-        <Route exact path="/user-page" component={UserPage} />
+        <GuestRoute exact path="/login" component={Login} />
+        <GuestRoute exact path="/sign-up" component={SignUp} />
+        <GuestRoute exact path="/forgot-password" component={ForgotPassword} />
+        <UserRoute exact path="/user-page" component={UserPage} />
       </App>
     </BrowserRouter>
   </ApolloProvider>,

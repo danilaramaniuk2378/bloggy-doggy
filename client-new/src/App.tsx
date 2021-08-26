@@ -1,11 +1,20 @@
 import React, { ReactNode, useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
+import { CircularProgress } from '@material-ui/core';
 import { setAccessToken } from './accessToken';
 import Header from './header';
 
 const useStyles = makeStyles(() => ({
   root: {
     flexGrow: 1,
+  },
+  pageConent: {
+    padding: '12px',
+  },
+  spinner: {
+    marginTop: 150,
+    display: 'flex',
+    justifyContent: 'center',
   },
 }));
 
@@ -30,13 +39,17 @@ const App = ({ children }: Props) => {
   }, []);
 
   if (loading) {
-    return <div>loading...</div>;
+    return (
+      <div className={classes.spinner}>
+        <CircularProgress />
+      </div>
+    );
   }
 
   return (
     <div className={classes.root}>
       <Header />
-      {children}
+      <div className={classes.pageConent}>{children}</div>
     </div>
   );
 };

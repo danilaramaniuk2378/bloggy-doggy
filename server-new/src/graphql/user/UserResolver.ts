@@ -9,6 +9,7 @@ import {
   UseMiddleware,
   Int,
 } from 'type-graphql';
+import { v4 } from 'uuid';
 import { verify } from 'jsonwebtoken';
 import { hash, compare } from 'bcryptjs';
 import { getConnection } from 'typeorm';
@@ -19,6 +20,9 @@ import { isAuth } from '../isAuth';
 import { sendRefreshToken } from '../../sendRefreshToken';
 import { UsernamePasswordInput } from './UsernamePasswordInput';
 import validateRegister from './validateRegister';
+import { sendForgotEmail } from '../../utils/email';
+
+const FORGET_PASSWORD_PREFIX = 'FORGET_PASSWORD_PREFIX';
 
 @ObjectType()
 export class FieldError {
@@ -50,7 +54,6 @@ export default class UserResolver {
   @Query(() => String)
   @UseMiddleware(isAuth)
   bye(@Ctx() { payload }: MyContext) {
-    console.log(payload);
     return `your user id is ${payload!.userId}`;
   }
 
@@ -181,5 +184,22 @@ export default class UserResolver {
       accessToken: createAccessToken(user),
       user,
     };
+  }
+
+  @Mutation(() => Boolean)
+  async forgotPassword(@Arg('email') email: string, @Ctx() { redis }: MyContext) {
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      // the email is not in the db
+      return true;
+    }
+
+    const token = v4();
+
+    await redis.set(`${FORGET_PASSWORD_PREFIX}${token}`, user.id, 'ex', 1000 * 60 * 60 * 24 * 3); // 3 days
+
+    await sendForgotEmail(email, token);
+
+    return true;
   }
 }
