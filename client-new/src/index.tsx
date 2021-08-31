@@ -22,6 +22,7 @@ import App from './App';
 import UserRoute from './common/routes/UserRoute';
 import GuestRoute from './common/routes/GuestRoute';
 import ForgotPassword from './forgot-password';
+import ChangePassword from './change-password';
 
 const cache = new InMemoryCache({});
 
@@ -111,6 +112,11 @@ ReactDOM.render(
         <GuestRoute exact path="/login" component={Login} />
         <GuestRoute exact path="/sign-up" component={SignUp} />
         <GuestRoute exact path="/forgot-password" component={ForgotPassword} />
+        <GuestRoute
+          exact
+          path="/change-password/:token"
+          component={ChangePassword}
+        />
         <UserRoute exact path="/user-page" component={UserPage} />
       </App>
     </BrowserRouter>
