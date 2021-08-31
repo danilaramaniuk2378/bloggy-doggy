@@ -1,11 +1,25 @@
-
 {
-  "parser": "babel-eslint",
-  "extends": "airbnb",
-  "env": {
-    "node": true
-  },
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint",
+    "prettier"
+  ],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
   "rules": {
-    "no-unused-expressions": 0
+    "no-console": 1,
+    "prettier/prettier": [
+      "error",
+      {
+        "semi": true,
+        "singleQuote": true,
+        "printWidth": 100
+      }
+    ]
   }
 }

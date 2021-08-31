@@ -1,7 +1,0 @@
-FROM node:alpine
-WORKDIR '/app'
-COPY ./package.json .
-RUN npm install
-COPY . .
-# TODO: change the way of creation
-CMD ["npm", "run", "start"]
