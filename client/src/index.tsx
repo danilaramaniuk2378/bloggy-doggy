@@ -23,6 +23,7 @@ import UserRoute from './common/routes/UserRoute';
 import GuestRoute from './common/routes/GuestRoute';
 import ForgotPassword from './forgot-password';
 import ChangePassword from './change-password';
+import CreatePost from './create-post';
 
 const cache = new InMemoryCache({});
 
@@ -118,6 +119,7 @@ ReactDOM.render(
           component={ChangePassword}
         />
         <UserRoute exact path="/user-page" component={UserPage} />
+        <UserRoute exact path="/create-post" component={CreatePost} />
       </App>
     </BrowserRouter>
   </ApolloProvider>,

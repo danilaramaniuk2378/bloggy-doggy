@@ -47,6 +47,11 @@ const Header = () => {
               </Button>
             )}
             {isLoggedIn && (
+              <Button component={Link} to="/create-post" color="inherit">
+                Create Post
+              </Button>
+            )}
+            {isLoggedIn && (
               <Button component={Link} to="/user-page" color="inherit">
                 User Page
               </Button>

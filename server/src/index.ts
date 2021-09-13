@@ -9,9 +9,10 @@ import { createConnection } from 'typeorm';
 import cookieParser from 'cookie-parser';
 import { verify } from 'jsonwebtoken';
 import UserResolver from './graphql/user/UserResolver';
-import { User } from './entity/User';
+import { User } from './entities/User';
 import { createAccessToken, createRefreshToken } from './graphql/user/auth';
 import { sendRefreshToken } from './sendRefreshToken';
+import { PostResolver } from './graphql/post/PostResolver';
 
 (async () => {
   const app = express();
@@ -60,10 +61,25 @@ import { sendRefreshToken } from './sendRefreshToken';
 
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
-      resolvers: [UserResolver],
+      resolvers: [UserResolver, PostResolver],
       validate: false,
     }),
-    context: ({ req, res }) => ({ req, res, redis }),
+    context: ({ req, res }) => {
+      let userId = -1;
+      const authorization = req.headers['authorization'];
+
+      if (authorization) {
+        try {
+          const token = authorization.split(' ')[1];
+          const payload: any = verify(token, process.env.ACCESS_TOKEN_SECRET!);
+          userId = payload.userId;
+        } catch (err) {
+          console.error(err);
+        }
+      }
+
+      return { req, res, redis, userId };
+    },
   });
 
   apolloServer.applyMiddleware({ app, cors: false });

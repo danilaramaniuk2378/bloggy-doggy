@@ -13,7 +13,7 @@ import { v4 } from 'uuid';
 import { verify } from 'jsonwebtoken';
 import { hash, compare } from 'bcryptjs';
 import { getConnection } from 'typeorm';
-import { User } from '../../entity/User';
+import { User } from '../../entities/User';
 import { MyContext } from '../../MyContext';
 import { createAccessToken, createRefreshToken } from './auth';
 import { isAuth } from '../isAuth';
@@ -91,7 +91,7 @@ export default class UserResolver {
 
   @Query(() => [User])
   users() {
-    return User.find();
+    return User.find() || [];
   }
 
   @Mutation(() => UserResponse)
