@@ -16,7 +16,7 @@ import { PostResolver } from './graphql/post/PostResolver';
 
 (async () => {
   const app = express();
-  const redis = new Redis();
+  const redis = new Redis({ host: 'redis' });
 
   app.use(
     cors({
