@@ -27,7 +27,7 @@ const App = ({ children }: Props) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:4000/refresh_token', {
+    fetch(`${process.env.REACT_APP_SERVER_URI}/refresh_token`, {
       method: 'POST',
       credentials: 'include',
     }).then(async (x) => {

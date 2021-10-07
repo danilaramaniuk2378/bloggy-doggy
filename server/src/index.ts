@@ -2,7 +2,7 @@ import 'dotenv/config';
 import 'reflect-metadata';
 import express from 'express';
 import cors from 'cors';
-import Redis from 'ioredis';
+// import Redis from 'ioredis';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { createConnection } from 'typeorm';
@@ -16,11 +16,12 @@ import { PostResolver } from './graphql/post/PostResolver';
 
 (async () => {
   const app = express();
-  const redis = new Redis({ host: 'redis' });
+  // TODO: add reddis prod infrastructure
+  const redis = {};
 
   app.use(
     cors({
-      origin: 'http://localhost:3000',
+      origin: process.env.FE_URI,
       credentials: true,
     })
   );
@@ -60,6 +61,8 @@ import { PostResolver } from './graphql/post/PostResolver';
   await createConnection();
 
   const apolloServer = new ApolloServer({
+    playground: true,
+    introspection: true,
     schema: await buildSchema({
       resolvers: [UserResolver, PostResolver],
       validate: false,
@@ -84,7 +87,14 @@ import { PostResolver } from './graphql/post/PostResolver';
 
   apolloServer.applyMiddleware({ app, cors: false });
 
-  app.listen(4000, () => {
-    console.log('express server started');
+  const PORT = process.env.PORT || 4000;
+  console.log('PORTyT', PORT);
+
+  // app.get('/', (_, res) => {
+  //   res.send('Hello LOL32');
+  // });
+
+  app.listen(PORT, () => {
+    console.log('express server starytedT');
   });
 })();

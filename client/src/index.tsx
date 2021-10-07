@@ -80,7 +80,7 @@ const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
         }
       },
       fetchAccessToken: () =>
-        fetch('http://localhost:4000/refresh_token', {
+        fetch(`${process.env.REACT_APP_SERVER_URI}/refresh_token`, {
           method: 'POST',
           credentials: 'include',
         }),
@@ -98,7 +98,7 @@ const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
     }),
     requestLink,
     new HttpLink({
-      uri: 'http://localhost:4000/graphql',
+      uri: `${process.env.REACT_APP_SERVER_URI}/graphql`,
       credentials: 'include',
     }),
   ]),
